@@ -1,0 +1,39 @@
+x-runtime: &runtime
+  image: ${COMPOSE_PROJECT_NAME:-buro}-cabinet:local
+  init: true
+  restart: unless-stopped
+  env_file:
+    - path: .env
+      required: false
+  environment:
+    DATABASE: /data/buro.sqlite
+  volumes:
+    - cabinet-data:/data
+  read_only: true
+  tmpfs:
+    - /tmp
+  cap_drop: [ALL]
+  security_opt:
+    - no-new-privileges:true
+
+services:
+  cabinet:
+    <<: *runtime
+    build: .
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz',timeout=3).read()"]
+      start_period: 5s
+      interval: 15s
+      timeout: 5s
+      retries: 3
+  maintenance:
+    <<: *runtime
+    pull_policy: never
+    depends_on:
+      cabinet:
+        condition: service_healthy
+    command: ["python", "-m", "app.maintenance"]
+volumes:
+  cabinet-data:
