@@ -12,7 +12,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt && useradd --system --uid 10001 --no-create-home buro && install -d -o buro -g buro -m 700 /data
 COPY app/ app/
 COPY docs/ docs/
-COPY wsgi.py .
+COPY wsgi.py LICENSE ./
 COPY --from=ui /ui/dist/ frontend/dist/
 USER buro
 EXPOSE 8080
