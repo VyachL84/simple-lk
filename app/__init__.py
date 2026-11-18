@@ -8,8 +8,8 @@ import click
 from flask import Flask, g, jsonify, redirect, request, send_from_directory
 from werkzeug.exceptions import HTTPException
 
-from . import auth, billing, guides, operations, workspace
-from .core import DAY, Problem, cfg, demo, https_url
+from . import auth, billing, guides, legal, operations, workspace
+from .core import DAY, Problem, available_integrations, cfg, demo, https_url
 from .db import db, init
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -28,7 +28,9 @@ KEYS = (
     "YOO_SECRET",
     "POLICY_URL",
     "CONSENT_URL",
+    "OPERATOR_NAME",
     "OPERATOR_CONTACT",
+    "OPERATOR_HOSTING",
     "CONSENT_VERSION",
 )
 
@@ -60,21 +62,11 @@ def create_app(overrides=None):
             raise RuntimeError(
                 "Заполните секрет, HTTPS origin, контакты и отдельные утверждённые документы оператора (см. .env.example)"
             )
-        reserved = {app.config["PUBLIC_URL"] + path for path in ("/privacy", "/consent", "/login", "/")}
-        if any(app.config[k].split("?")[0].split("#")[0] in reserved for k in ("POLICY_URL", "CONSENT_URL")):
-            raise RuntimeError(
-                "Укажите отдельные опубликованные документы, не адрес экрана входа или демо-шаблона"
-            )
         if app.config["ESIA_ISSUER"] and not https_url(app.config["ESIA_ISSUER"]):
             raise RuntimeError("ESIA_ISSUER должен использовать HTTPS")
-        if not (
-            app.config["SMS_API_ID"]
-            or all(app.config[k] for k in ("YANDEX_CLIENT_ID", "YANDEX_CLIENT_SECRET"))
-            or all(app.config[k] for k in ("ESIA_ISSUER", "ESIA_CLIENT_ID", "ESIA_CLIENT_SECRET"))
-        ):
+        if not any(available_integrations(app.config)["providers"].values()):
             raise RuntimeError("Подключите хотя бы один реальный провайдер входа")
     else:
-        app.config["CONSENT_VERSION"] = "demo-1"
         if not app.config["APP_SECRET"]:
             keyfile = Path(app.config["DATABASE"]).parent / "demo.key"
             keyfile.parent.mkdir(parents=True, exist_ok=True)
@@ -85,9 +77,10 @@ def create_app(overrides=None):
             except FileExistsError:
                 pass
             app.config["APP_SECRET"] = keyfile.read_text().strip()
+    legal.configure(app.config)
     init(app)
     operations.register(app)
-    for bp in (workspace.bp, auth.bp, billing.bp, guides.bp):
+    for bp in (workspace.bp, auth.bp, billing.bp, guides.bp, legal.bp):
         app.register_blueprint(bp)
 
     @app.before_request
@@ -148,13 +141,12 @@ def create_app(overrides=None):
     @app.get("/")
     @app.get("/<path:path>")
     def site(path=""):
-        if path in ("privacy", "consent") and not demo():
-            return redirect(cfg("POLICY_URL" if path == "privacy" else "CONSENT_URL"))
+        if path in ("privacy", "consent"):
+            key = "POLICY_URL" if path == "privacy" else "CONSENT_URL"
+            return redirect(legal.PATHS[key] if demo() else cfg(key))
         if path.startswith("api/"):
             raise Problem("Маршрут не найден.", 404)
-        return send_from_directory(
-            ROOT / "frontend/dist", "index.html" if path in ("", "login", "privacy", "consent") else path
-        )
+        return send_from_directory(ROOT / "frontend/dist", "index.html" if path in ("", "login") else path)
 
     @app.cli.command("cleanup")
     def cleanup():

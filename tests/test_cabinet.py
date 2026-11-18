@@ -43,7 +43,7 @@ class CabinetCase(unittest.TestCase):
         self.ctx = self.app.app_context()
         self.ctx.push()
         self.addCleanup(self.ctx.pop)
-        self.agree = {"version": "demo-1" if self.mode == "demo" else "v1", "consent": True}
+        self.agree = {"version": self.config["CONSENT_VERSION"], "consent": True}
         self.w = self.post("/open", {"preview": True}).json
 
     def post(self, path, payload=None, client=None, method="POST"):
@@ -174,7 +174,7 @@ class DemoTests(CabinetCase):
 
     def test_consent_and_demo_identity(self):
         self.assertEqual(
-            self.post("/auth/demo/esia", {"consent": False, "version": "demo-1"}).status_code, 400
+            self.post("/auth/demo/esia", {**self.agree, "consent": False}).status_code, 400
         )
         for method in ["yandex", "esia"]:
             self.assertEqual(

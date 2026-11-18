@@ -167,7 +167,7 @@ function ClientForm({ item, close }) {
       {[
         ["name", "Имя клиента", "Имя и фамилия", 100],
         ["company", "Компания", "Необязательно", 100],
-        ["email", "Электронная почта", "name@example.ru", 180],
+        ["email", "Электронная почта", "name@example.test", 180],
       ].map(([key, l, ph, max]) => (
         <label key={key}>
           {l}

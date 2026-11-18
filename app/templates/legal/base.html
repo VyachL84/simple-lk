@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% endblock %} · Бюро</title>
+  <link rel="icon" href="/mark.svg" type="image/svg+xml">
+  {% if css %}<link rel="stylesheet" href="/assets/{{ css }}">{% endif %}
+  <link rel="stylesheet" href="/guide.css">
+</head>
+<body class="docs-body">
+  <header class="docs-header">
+    <a href="/" aria-label="Бюро — главная"><span class="brand"><img src="/mark.svg" alt="">Бюро<span class="brand-point">.</span></span></a>
+    <span>Персональные данные</span><a href="/login">Ко входу →</a>
+  </header>
+  <div class="docs-layout">
+    <nav aria-label="Документы о персональных данных">
+      <div class="eyebrow"><i></i>ДОКУМЕНТЫ</div>
+      <a href="{{ policy_url }}" {% if active == 'POLICY_URL' %}aria-current="page"{% endif %}>Политика</a>
+      <a href="{{ consent_url }}" {% if active == 'CONSENT_URL' %}aria-current="page"{% endif %}>Согласие</a>
+    </nav>
+    <main class="card doc-article">
+      <div class="eyebrow"><i></i>ТЕСТОВЫЙ ВХОД · ЯНДЕКС ID</div>
+      <h1>{{ self.title() }}</h1>
+      <p>Версия: <strong>{{ version }}</strong>. Оператор: <strong>{{ operator }}</strong>, физическое лицо.</p>
+      {% if demo %}
+      <p><strong>Сейчас это демо.</strong> Вход имитируется: кабинет не обращается к Яндексу, Госуслугам или SMS-провайдеру. Используйте только вымышленные данные. Демо-кабинеты старше 30 дней удаляются при плановой очистке. Ниже описан тест с подключённым Яндекс ID.</p>
+      {% endif %}
+      {% block document %}{% endblock %}
+      <h2 id="operator">Реквизиты для этого стенда</h2>
+      <p><strong>Электронная почта оператора для запросов и отзыва:</strong>
+        {% if contact %}<a href="mailto:{{ contact }}">{{ contact }}</a>.{% else %}не указана. До публикации с реальными аккаунтами оператор должен указать действующий адрес.{% endif %}
+      </p>
+      <p><strong>Хостинг и место хранения базы и резервных копий:</strong>
+        {% if hosting %}{{ hosting }}{% else %}не указаны. При локальном запуске база находится в Docker-томе на компьютере, где запущен кабинет. Размещение этого демо не подтверждает хранение в РФ.{% endif %}
+      </p>
+    </main>
+  </div>
+</body>
+</html>

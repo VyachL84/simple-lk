@@ -168,21 +168,31 @@ def new_account(method, examples=False):
     return aid
 
 
+def available_integrations(config):
+    """Public flags, shared by startup checks, document validation and the login UI."""
+
+    def enabled(*keys):
+        return config["MODE"] == "demo" or all(config[key] for key in keys)
+
+    return {
+        "providers": {
+            "phone": enabled("SMS_API_ID"),
+            "yandex": enabled("YANDEX_CLIENT_ID", "YANDEX_CLIENT_SECRET"),
+            "esia": enabled("ESIA_ISSUER", "ESIA_CLIENT_ID", "ESIA_CLIENT_SECRET"),
+        },
+        "billing": enabled("YOO_SHOP_ID", "YOO_SECRET"),
+    }
+
+
 def config_public():
     return {
         "demo": demo(),
         "price": PRICE,
         "consentVersion": cfg("CONSENT_VERSION"),
-        "policyUrl": cfg("POLICY_URL") or "/privacy",
-        "consentUrl": cfg("CONSENT_URL") or "/consent",
+        "policyUrl": cfg("POLICY_URL"),
+        "consentUrl": cfg("CONSENT_URL"),
         "contact": cfg("OPERATOR_CONTACT"),
-        "providers": {
-            "phone": demo() or bool(cfg("SMS_API_ID")),
-            "yandex": demo() or bool(cfg("YANDEX_CLIENT_ID") and cfg("YANDEX_CLIENT_SECRET")),
-            "esia": demo()
-            or bool(cfg("ESIA_ISSUER") and cfg("ESIA_CLIENT_ID") and cfg("ESIA_CLIENT_SECRET")),
-        },
-        "billing": demo() or bool(cfg("YOO_SHOP_ID") and cfg("YOO_SECRET")),
+        **available_integrations(app.config),
     }
 
 

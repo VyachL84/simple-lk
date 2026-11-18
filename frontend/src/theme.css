@@ -1804,8 +1804,7 @@ td:last-child {
   color: #acb0b7;
   padding: 2px;
 }
-.login-screen,
-.legal-view {
+.login-screen {
   width: min(920px, calc(100% - 40px));
   margin: 0 auto;
   padding: 42px 0;
@@ -1866,31 +1865,6 @@ td:last-child {
   margin-top: 20px;
   color: #91959c;
   font-size: 11px;
-}
-.legal-view {
-  max-width: 740px;
-}
-.legal-view article {
-  margin: 24px 0;
-  padding: clamp(22px, 4vw, 42px);
-}
-.legal-view h1 {
-  font-size: 30px;
-  letter-spacing: -1.2px;
-  margin: 12px 0;
-}
-.legal-view h2 {
-  font-size: 18px;
-  letter-spacing: -0.5px;
-  margin: 22px 0 8px;
-}
-.legal-view p {
-  font-size: 14px;
-  line-height: 1.8;
-  color: #70757e;
-}
-.legal-view .inline-link {
-  margin-top: 20px;
 }
 /* Responsive workspace */
 @media (min-width: 1500px) {
@@ -2494,13 +2468,6 @@ td:last-child {
   .bell-pop {
     right: -62px;
     width: 285px;
-  }
-  .legal-view {
-    width: calc(100% - 30px);
-    padding: 25px 0;
-  }
-  .legal-view h1 {
-    font-size: 25px;
   }
   .guide-grid + .notice {
     margin-top: 14px;
