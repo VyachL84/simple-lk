@@ -12,8 +12,10 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install -r requirements.txt && python -m unittest discover -s tests -v
-      - name: Build and start the complete demo
-        run: docker compose up --build --detach --wait
+      - name: Build and start the complete demo with the example settings
+        run: |
+          cp .env.example .env
+          docker compose up --build --detach --wait
       - name: Check health and durable workspace
         shell: bash
         run: |

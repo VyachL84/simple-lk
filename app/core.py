@@ -173,8 +173,8 @@ def config_public():
         "demo": demo(),
         "price": PRICE,
         "consentVersion": cfg("CONSENT_VERSION"),
-        "policyUrl": cfg("POLICY_URL") or "/privacy",
-        "consentUrl": cfg("CONSENT_URL") or "/consent",
+        "policyUrl": cfg("POLICY_URL"),
+        "consentUrl": cfg("CONSENT_URL"),
         "contact": cfg("OPERATOR_CONTACT"),
         "providers": {
             "phone": demo() or bool(cfg("SMS_API_ID")),

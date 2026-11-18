@@ -43,7 +43,6 @@ import {
   Directory,
   Events,
   Help,
-  Legal,
   Login,
   Onboarding,
   Settings,
@@ -424,7 +423,6 @@ function App() {
     [error, setError] = useState(""),
     [tries, setTries] = useState(0);
   const timer = useRef(0);
-  const legal = ["/privacy", "/consent"].includes(location.pathname);
   function update(r) {
     setData(r);
     bump((n) => n + 1);
@@ -473,7 +471,6 @@ function App() {
     return () => window.removeEventListener("hashchange", fn);
   }, []);
   useEffect(() => {
-    if (legal) return;
     let live = true;
     setError("");
     request("/open", "POST", { preview: routeFromLocation() !== "login" })
@@ -486,12 +483,10 @@ function App() {
     return () => {
       live = false;
     };
-  }, [tries, legal]);
+  }, [tries]);
   useEffect(() => {
-    document.title =
-      (legal ? "Персональные данные" : navTitles[route] || "Обзор") + " · Бюро";
-  }, [route, legal]);
-  if (legal) return <Legal consent={location.pathname === "/consent"} />;
+    document.title = (navTitles[route] || "Обзор") + " · Бюро";
+  }, [route]);
   if (!data)
     return (
       <div className="boot">
