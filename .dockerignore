@@ -1,0 +1,16 @@
+.git
+.env*
+.venv
+node_modules
+**/node_modules
+**/dist
+**/__pycache__
+data
+backups
+*.sqlite*
+
+.cache
+
+.ruff_cache
+**/test-results
+**/playwright-report

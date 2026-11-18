@@ -1,0 +1,33 @@
+name: Cabinet checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt && python -m unittest discover -s tests -v
+      - name: Build and start the complete demo
+        run: docker compose up --build --detach --wait
+      - name: Check health and durable workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS http://localhost:8080/healthz
+          curl -fsS -c /tmp/buro-cookie -H 'Content-Type: application/json' -H 'X-Buro-Request: 1' --data '{"preview":true}' http://localhost:8080/api/open | jq -e '.stats.clients == 12'
+          docker compose restart cabinet
+          docker compose up --wait -d
+          curl -fsS -b /tmp/buro-cookie http://localhost:8080/api/workspace | jq -e '.stats.clients == 12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Browser journeys
+        working-directory: frontend
+        run: npm ci && npx playwright install --with-deps chromium && npm run test:e2e
+      - if: always()
+        run: docker compose down --volumes

@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{ guides[name] }} · Документация Бюро</title>
+  <link rel="icon" href="/mark.svg" type="image/svg+xml">
+  {% if css %}<link rel="stylesheet" href="/assets/{{ css }}">{% endif %}
+  <link rel="stylesheet" href="/guide.css">
+</head>
+<body class="docs-body">
+<header class="docs-header"><a href="/" aria-label="Бюро — главная"><span class="brand"><img src="/mark.svg" alt="">Бюро<span class="brand-point">.</span></span></a><span>Центр помощи / Документация</span><a href="/#/help">В кабинет →</a></header>
+<div class="docs-layout">
+  <nav aria-label="Документация"><div class="eyebrow"><i></i>РУКОВОДСТВА</div>
+    {% for id,title in guides.items() %}<a href="/guides/{{ id }}" {% if id == name %}aria-current="page"{% endif %}>{{ title }}</a>{% endfor %}
+  </nav>
+  <main class="card doc-article"><div class="eyebrow"><i></i>БАЗА ЗНАНИЙ</div>{{ article|safe }}<hr><a href="?raw=1">Открыть исходный Markdown ↗</a></main>
+</div>
+</body>
+</html>
