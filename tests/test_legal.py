@@ -83,6 +83,21 @@ class LegalTests(unittest.TestCase):
             self.assertIn("operator-rev-2", html)
             self.assertNotIn("fixture-secret", html)
 
+    def test_partial_credentials_do_not_enable_integrations(self):
+        # Only Yandex is complete. The same flags must govern startup, legal pages and buttons.
+        settings = {
+            **self.production,
+            "ESIA_ISSUER": "https://broker.example.test",
+            "ESIA_CLIENT_ID": "fixture",
+            "YOO_SHOP_ID": "fixture",
+        }
+        client = self.make_app(**settings).test_client()
+        config = client.post("/api/open", json={}, headers={"X-Buro-Request": "1"}).json["config"]
+        self.assertEqual(config["providers"], {"yandex": True, "phone": False, "esia": False})
+        self.assertFalse(config["billing"])
+        with self.assertRaisesRegex(RuntimeError, "хотя бы один реальный провайдер входа"):
+            self.make_app(**{**settings, "YANDEX_CLIENT_SECRET": ""})
+
     def test_external_documents_remain_authoritative(self):
         custom = {
             **self.production,

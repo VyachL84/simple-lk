@@ -5,7 +5,7 @@ from urllib.parse import unquote, urlsplit
 
 from flask import Blueprint, current_app, redirect, render_template
 
-from .core import cfg, demo
+from .core import available_integrations, cfg, demo
 
 bp = Blueprint("legal", __name__)
 PATHS = {"POLICY_URL": "/legal/policy", "CONSENT_URL": "/legal/consent"}
@@ -26,6 +26,8 @@ def configure(config):
         config["CONSENT_VERSION"] = config["CONSENT_VERSION"] or "test-login-v1"
         return
 
+    integrations = available_integrations(config)
+    active_providers = {method for method, enabled in integrations["providers"].items() if enabled}
     # Installations with their own published documents need no test-specific settings.
     for key, path in PATHS.items():
         local = _local_path(config, key)
@@ -39,11 +41,7 @@ def configure(config):
             raise RuntimeError(
                 "Для теста с реальными аккаунтами заполните OPERATOR_NAME, OPERATOR_CONTACT и OPERATOR_HOSTING."
             )
-        if (
-            config["SMS_API_ID"]
-            or all(config[k] for k in ("ESIA_ISSUER", "ESIA_CLIENT_ID", "ESIA_CLIENT_SECRET"))
-            or (config["YOO_SHOP_ID"] and config["YOO_SECRET"])
-        ):
+        if active_providers != {"yandex"} or integrations["billing"]:
             raise RuntimeError(
                 "Встроенные документы описывают только тест Яндекс ID. Для других способов входа и оплаты укажите свои документы."
             )

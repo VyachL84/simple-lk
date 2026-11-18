@@ -9,7 +9,7 @@ from flask import Flask, g, jsonify, redirect, request, send_from_directory
 from werkzeug.exceptions import HTTPException
 
 from . import auth, billing, guides, legal, operations, workspace
-from .core import DAY, Problem, cfg, demo, https_url
+from .core import DAY, Problem, available_integrations, cfg, demo, https_url
 from .db import db, init
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -64,11 +64,7 @@ def create_app(overrides=None):
             )
         if app.config["ESIA_ISSUER"] and not https_url(app.config["ESIA_ISSUER"]):
             raise RuntimeError("ESIA_ISSUER должен использовать HTTPS")
-        if not (
-            app.config["SMS_API_ID"]
-            or all(app.config[k] for k in ("YANDEX_CLIENT_ID", "YANDEX_CLIENT_SECRET"))
-            or all(app.config[k] for k in ("ESIA_ISSUER", "ESIA_CLIENT_ID", "ESIA_CLIENT_SECRET"))
-        ):
+        if not any(available_integrations(app.config)["providers"].values()):
             raise RuntimeError("Подключите хотя бы один реальный провайдер входа")
     else:
         if not app.config["APP_SECRET"]:
